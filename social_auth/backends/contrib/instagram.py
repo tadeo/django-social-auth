@@ -3,7 +3,7 @@ from urllib import urlencode
 from django.utils import simplejson
 
 from social_auth.backends import BaseOAuth2, OAuthBackend, USERNAME
-from social_auth.utils import dsa_urlopen
+from social_auth.utils import setting, dsa_urlopen
 
 
 INSTAGRAM_SERVER = 'instagram.com'
@@ -47,6 +47,14 @@ class InstagramAuth(BaseOAuth2):
             return simplejson.load(dsa_urlopen(url))
         except ValueError:
             return None
+
+    def build_absolute_uri(self, *args, **kwargs):
+        """Adds www. prefix if specified in settings
+        """
+        uri = super(InstagramAuth, self).build_absolute_uri(*args, **kwargs)
+        if setting('INSTAGRAM_AUTH_ENSURE_WWW_PREFIX') and uri.find('://www.') == -1:
+            uri.replace('://', '://www.')
+        return uri
 
 
 # Backend definition
